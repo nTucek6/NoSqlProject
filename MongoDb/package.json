@@ -1,5 +1,7 @@
 {
+  "type": "module",
   "dependencies": {
-    "mongodb": "^7.0.0"
+    "mongodb": "^7.0.0",
+    "readline-sync": "^1.4.10"
   }
 }

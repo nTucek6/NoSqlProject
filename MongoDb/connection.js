@@ -1,7 +1,7 @@
-const { MongoClient } = require("mongodb");
+import { MongoClient } from "mongodb";
 const url = "mongodb://localhost:27017/zadatak1";
 
-const database = "vjezba1";
+const database = "projekt_1";
 
 let connection = null;
 async function createConnection() {
@@ -33,4 +33,4 @@ async function closeConnection() {
   }
 }
 
-module.exports = { createConnection, closeConnection, connectDb };
+export { createConnection, closeConnection, connectDb };

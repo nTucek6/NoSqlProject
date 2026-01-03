@@ -1,4 +1,4 @@
-const { connectDb } = require("../connection");
+import { connectDb } from "../connection.js";
 
 async function showCollections() {
   const db = await connectDb();
@@ -17,6 +17,13 @@ async function dropCollection(collectionName) {
   await db.dropCollection(collectionName);
 }
 
+async function findOneInCollection(collectionName, query = {}) {
+  const db = await connectDb();
+  const collection = db.collection(collectionName);
+  const data = await collection.findOne(query);
+  return data;
+}
+
 async function findInCollection(collectionName, query = {}) {
   const db = await connectDb();
   const collection = db.collection(collectionName);
@@ -31,7 +38,7 @@ async function insertOneToCollection(collectionName, data) {
   if (!exist) {
     await createCollection(collectionName);
   }
-  await db.collection(collectionName).insertOne(data);
+  return await db.collection(collectionName).insertOne(data);
 }
 
 async function insertManyToCollection(collectionName, data = []) {
@@ -41,15 +48,28 @@ async function insertManyToCollection(collectionName, data = []) {
   if (!exist) {
     await createCollection(collectionName);
   }
-  await db.collection(collectionName).insertMany(data);
+  return await db.collection(collectionName).insertMany(data);
 }
 
-async function updateOneFromCollection(collectionName, query, updatedValue) {
+async function updateOneFromCollection(
+  collectionName,
+  query,
+  updatedValue,
+  options
+) {
   //create collection if it does'nt exist and add data, data is object {attribte: 'value', ...}
   const db = await connectDb();
-  await db
+  return await db
     .collection(collectionName)
-    .updateOne(query, { $set: { ...updatedValue } });
+    .updateOne(query, updatedValue, options);
+}
+
+async function updateManyFromCollection(collectionName, query, updatedValue) {
+  //create collection if it does'nt exist and add data, data is object {attribte: 'value', ...}
+  const db = await connectDb();
+  return await db
+    .collection(collectionName)
+    .updateMany(query, { $set: { ...updatedValue } });
 }
 
 async function removeFieldsFromCollection(collectionName, fields, query = {}) {
@@ -81,9 +101,27 @@ async function deleteManyFromCollection(collectionName, filter = {}) {
   console.log(`Deleted ${result.deletedCount} document(s)`);
 }
 
-module.exports = {
+async function getCollectionColumnNames(collectionName) {
+  const db = await connectDb();
+  const result = Object.keys(await db.collection(collectionName).findOne());
+  return result;
+}
+
+async function countDocuments(collectionName, query) {
+  const db = await connectDb();
+  return db.collection(collectionName).countDocuments(query);
+}
+
+async function aggregateCollection(collectionName, query) {
+  const db = await connectDb();
+  const result = db.collection(collectionName).aggregate(query).toArray();
+  return result;
+}
+
+export {
   showCollections,
   createCollection,
+  findOneInCollection,
   findInCollection,
   insertOneToCollection,
   insertManyToCollection,
@@ -91,5 +129,9 @@ module.exports = {
   deleteManyFromCollection,
   dropCollection,
   updateOneFromCollection,
+  updateManyFromCollection,
   removeFieldsFromCollection,
+  getCollectionColumnNames,
+  countDocuments,
+  aggregateCollection,
 };
