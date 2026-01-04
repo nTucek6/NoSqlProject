@@ -23,10 +23,11 @@ import {
 
 import { collection, CHECKING_ACCOUNT_STATUS } from "./enum/enums.js";
 
-import { CreditRiskClass, StatisticsNumerical } from "./class/classes.js";
-//import { input } from "./utils/readKeyboard-util.js";
+import { CreditRiskClass } from "./class/classes.js";
 
-import readlineSync from "readline-sync";
+//import readlineSync from "readline-sync";
+
+import readLineSync from "readline-sync";
 
 const NUMERIC_FIELD = [
   "durationMonths",
@@ -60,12 +61,12 @@ async function main() {
     console.log("Connecting to DB...");
     await connectDb();
 
-    let input = readlineSync.questionInt(
+    let input = await readLineSync.questionInt(
       "Odaberite zadatak: "
     );
 
     if (input != undefined) {
-      const number = parseInt(input);
+      const number = input
       switch (number) {
         case 1:
           await zadatak1();
@@ -272,10 +273,7 @@ async function zadatak4() {
 
   let query = {
     ...Object.fromEntries(
-      statistics.map((s) => [
-        [s.Varijabla],
-        { $lte: s["Srednja vrijednost"] },
-      ])
+      statistics.map((s) => [[s.Varijabla], { $lte: s["Srednja vrijednost"] }])
     ),
   };
   const statistics1 = await findInCollection(
@@ -285,10 +283,7 @@ async function zadatak4() {
 
   query = {
     ...Object.fromEntries(
-      statistics.map((s) => [
-        [s.Varijabla],
-        { $gt: s["Srednja vrijednost"] },
-      ])
+      statistics.map((s) => [[s.Varijabla], { $gt: s["Srednja vrijednost"] }])
     ),
   };
   const statistics2 = await findInCollection(
@@ -355,10 +350,7 @@ async function zadatak6() {
   console.log(await findOneInCollection(collection.EMB2_GERMAN_CREDIT_DATA));
 }
 
-async function zadatak7() {
-
-  
-}
+async function zadatak7() {}
 
 function readFromFileAndParse(filename) {
   const filePath = path.join(process.cwd(), filename);
@@ -376,6 +368,7 @@ function readFromFileAndParse(filename) {
 
 function parseToObject(object) {
   let data = new CreditRiskClass();
+ // let data : any = new CreditRiskClass();
   for (const [key, value] of Object.entries(object)) {
     data[key] = value;
   }

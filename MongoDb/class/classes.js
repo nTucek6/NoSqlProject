@@ -23,15 +23,3 @@ export class CreditRiskClass {
     this.targetClass = parseInt(fields[20]);
   }
 }
-
-export class StatisticsNumerical {
-  variable;
-  avarage;
-  standard_Deviation;
-  validCount;
-  constructor() {}
-
-  static parseToObject(object) {
-     
-  }
-}
