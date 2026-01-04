@@ -12,6 +12,21 @@ async function createCollection(collectionName) {
   await db.createCollection(collectionName);
 }
 
+async function getCollection(collectionName) {
+   const db = await connectDb();
+   return await db.collection(collectionName)
+}
+
+async function createIndex(collectionName, index,indexName) {
+  const db = await connectDb();
+  await db.collection(collectionName).createIndex(index,{name: indexName});
+}
+
+async function dropIndex(collectionName,indexName) {
+  const db = await connectDb();
+  await db.collection(collectionName).dropIndex({name: indexName});
+}
+
 async function dropCollection(collectionName) {
   const db = await connectDb();
   await db.dropCollection(collectionName);
@@ -134,4 +149,7 @@ export {
   getCollectionColumnNames,
   countDocuments,
   aggregateCollection,
+  createIndex,
+  dropIndex,
+  getCollection
 };

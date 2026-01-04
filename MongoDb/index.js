@@ -19,6 +19,9 @@ import {
   getCollectionColumnNames,
   countDocuments,
   aggregateCollection,
+  createIndex,
+  dropIndex,
+  getCollection,
 } from "./utils/utils.js";
 
 import { collection, CHECKING_ACCOUNT_STATUS } from "./enum/enums.js";
@@ -317,6 +320,12 @@ async function zadatak4() {
 }
 
 async function zadatak5() {
+  /* Dohvaćanje orginalnih podataka i spremanje u novi dokument
+  Nakon toga dohvaćamo frekvencije pojavljivanja za svaku kategoričku varijablu
+  Onda prolazimo kroz objekt frekvencija i uzimamo ključ i dodajemo mu sufix _freq u koje onda spremamo objekt koji sadrži
+  kategoričke vrijednosti u obliku ključ: vrijednost (primjer: creditHistory_freq: {A11: 20,A12:66,...})
+  Nakon toga svim objektima polja dodajemo nove vrijednosti na svaki objekt
+  */
   await dropCollection(collection.EMB_GERMAN_CREDIT_DATA);
 
   const main_data = await findInCollection(collection.GERMAN_CREDIT_DATA);
@@ -338,6 +347,17 @@ async function zadatak5() {
 }
 
 async function zadatak6() {
+  /* Na isti princip kao i zadatak 6, dohvaćamo glavne podatke koje onda kopiramo u novi dokument
+  Na objekte u novom dokumentu onda dodajemo statistiku za srednju vrijednost i standardnu devijaciju
+  To radimo tako da prođemo kroz podatke iz dokumenta statistike i spremamo objekt u obliku 
+    ageYears_stat: {
+    'Srednja vrijednost': 35.546,
+    'Standardna devijacija': 11.375468574317512,
+    'Broj nomissing elemenata': 1000
+  },
+  Ovaj format se onda sprema na sve objekte polja
+  Spremanje se vrši nad cijelim dokumentom preko updateMany()
+  */
   await dropCollection(collection.EMB2_GERMAN_CREDIT_DATA);
 
   const main_data = await findInCollection(collection.GERMAN_CREDIT_DATA);
@@ -394,7 +414,35 @@ async function zadatak7() {
   console.log(await findInCollection(collection.EMB2_GERMAN_CREDIT_DATA));
 }
 
-async function zadatak8() {}
+async function zadatak8() {
+
+  const table = await getCollection(collection.GERMAN_CREDIT_DATA);
+
+  const indexName = "custom_index";
+
+  const indexes = await table.indexes();
+  const indexExists = indexes.some((index) => index.name === indexName);
+
+  if (indexExists) {
+    table.dropIndex(indexName);
+  }
+
+  await createIndex(
+    collection.GERMAN_CREDIT_DATA,
+    { ageYears: 1, creditAmount: -1, checkingAccountStatus: 1 },
+    indexName
+  );
+
+  const result = await table
+    .find({
+      ageYears: { $gte: 30 }, // Range (prefix)
+      checkingAccountStatus: "A11", // Equality (suffix)
+    })
+    .sort({ creditAmount: -1 }).toArray();
+
+  console.log(result);
+  console.log("Entries: ", result.length);
+}
 
 function readFromFileAndParse(filename) {
   const filePath = path.join(process.cwd(), filename);
@@ -410,6 +458,7 @@ function readFromFileAndParse(filename) {
     .filter(Boolean);
 }
 
+/*
 function parseToObject(object) {
   let data = new CreditRiskClass();
   // let data : any = new CreditRiskClass();
@@ -422,6 +471,6 @@ function parseToObject(object) {
 function parseJSONToArray(data = []) {
   const array = data.map((item) => parseToObject(item));
   return array;
-}
+}*/
 
 main().catch(console.error);
