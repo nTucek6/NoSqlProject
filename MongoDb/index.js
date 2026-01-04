@@ -60,7 +60,7 @@ async function main() {
     console.log("Connecting to DB...");
     await connectDb();
 
-    let input: number | undefined = readlineSync.questionInt(
+    let input = readlineSync.questionInt(
       "Odaberite zadatak: "
     );
 
@@ -272,7 +272,7 @@ async function zadatak4() {
 
   let query = {
     ...Object.fromEntries(
-      statistics.map((s: any) => [
+      statistics.map((s) => [
         [s.Varijabla],
         { $lte: s["Srednja vrijednost"] },
       ])
@@ -285,7 +285,7 @@ async function zadatak4() {
 
   query = {
     ...Object.fromEntries(
-      statistics.map((s: any) => [
+      statistics.map((s) => [
         [s.Varijabla],
         { $gt: s["Srednja vrijednost"] },
       ])
@@ -360,7 +360,7 @@ async function zadatak7() {
   
 }
 
-function readFromFileAndParse(filename: string) {
+function readFromFileAndParse(filename) {
   const filePath = path.join(process.cwd(), filename);
   const content = fs.readFileSync(filePath, "utf8");
   return content
@@ -374,15 +374,15 @@ function readFromFileAndParse(filename: string) {
     .filter(Boolean);
 }
 
-function parseToObject(object: any): CreditRiskClass {
-  let data: any = new CreditRiskClass();
+function parseToObject(object) {
+  let data = new CreditRiskClass();
   for (const [key, value] of Object.entries(object)) {
     data[key] = value;
   }
   return data;
 }
 
-function parseJSONToArray(data: []): CreditRiskClass[] {
+function parseJSONToArray(data = []) {
   const array = data.map((item) => parseToObject(item));
   return array;
 }
