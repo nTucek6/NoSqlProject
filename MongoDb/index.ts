@@ -60,8 +60,6 @@ async function main() {
     console.log("Connecting to DB...");
     await connectDb();
 
-    let continueProgram = true;
-
     let input: number | undefined = readlineSync.questionInt(
       "Odaberite zadatak: "
     );
@@ -82,6 +80,12 @@ async function main() {
         case 4:
           await zadatak4();
           break;
+        case 5:
+          await zadatak5();
+          break;
+        case 6:
+          await zadatak6();
+          break;
       }
     }
 
@@ -101,6 +105,9 @@ async function importToDatabase() {
 }
 
 async function zadatak1() {
+  /* Prolazimo kroz sva polja koja su numerička i tražimo ako je koja vrijednost prazna, ako da ta vrijednost se postavlja na -1
+  Isto tako i za sva kategorička polja, prolazimo kroz listu tih polja i tražimo prazne vrijednosti i dajemo im vrijednost empty. 
+  */
   for (const field of NUMERIC_FIELD) {
     const query = {
       $or: [
@@ -174,9 +181,12 @@ async function zadatak3() {
   /*
   Prolazak kroz sve kategoričke stupce, spremanje svakog stupca u objekt formata "nazivStupca": ['vrijednost1'...]
   Nakon toga se kreira novi dokument u koji će se spremini frekvencija pojavljivanjai varijabli
+  Nakon toga se prolazi kroz objekt koji sadrži atribute koje imaju listu kategoričkih vrijednosti
+  Unutar for petlje se kreira unutar novog dokumenta za svaki atribut vrijednost s brojem pojavljanja,
+  primjer: checkingAccountStatus: { A11: 0, A12: 0, A13: 0, A14: 0 },
+  Nakon toga unutar još jedne for petlje prolaze se sve vrijednosti kategorije i broji se njihovo ponavljanje
+  Onda se svako ponavljanje sprema u bazu za svaku kategoriju i njihovu vrijednost
   */
-
-  const uniqueCategories = [];
   const query = [
     { $match: { field: { $ne: "empty" } } },
     {
@@ -223,8 +233,6 @@ async function zadatak3() {
           const result = await countDocuments(collection.GERMAN_CREDIT_DATA, {
             [key]: v,
           });
-          //console.log(result);
-
           const update = {
             $inc: { [`${key}.${v}`]: result },
           };
@@ -247,6 +255,14 @@ async function zadatak3() {
 }
 
 async function zadatak4() {
+  /* Prvo učitavamo in dokumenta statistike podatke koji prikazuju srednju vrijednost
+    Prvo se kreira upit gdje se pomoću operatora $lte traže sva polja gdje su sve numeričke
+    vrijednosti manje ili jednake od srednje vrijednosti 
+    Isti proces se ponavlja i za drugi upit gdje se traže sva polja gdje su sve vrijednosti veće od
+    srednje vrijednosti
+    Na kraju se se rezultati spremaju u dva nova dokumenta statiskia1 i statistika2
+  */
+
   const statistics = await findInCollection(
     collection.STATISTICS_GERMAN_CREDIT_DATA
   );
@@ -290,10 +306,59 @@ async function zadatak4() {
   );
 
   console.log(statistics);
-  console.log(await findInCollection(collection.STATISTICS1_GERMAN_CREDIT_DATA));
+  console.log(
+    await findInCollection(collection.STATISTICS1_GERMAN_CREDIT_DATA)
+  );
 }
 
+async function zadatak5() {
+  await dropCollection(collection.EMB_GERMAN_CREDIT_DATA);
 
+  const main_data = await findInCollection(collection.GERMAN_CREDIT_DATA);
+
+  const statistics2 = await findInCollection(
+    collection.STATISTICS2_GERMAN_CREDIT_DATA
+  );
+
+  const emb = {
+    _id: "emb_tablica3",
+    original_data: main_data,
+    embeded: {
+      ...Object.fromEntries(
+        CATEGORIC_FIELD.map((field) => [[field], statistics2])
+      ),
+    },
+  };
+  await insertOneToCollection(collection.EMB_GERMAN_CREDIT_DATA, emb);
+  console.log(await findOneInCollection(collection.EMB_GERMAN_CREDIT_DATA));
+}
+
+async function zadatak6() {
+  await dropCollection(collection.EMB2_GERMAN_CREDIT_DATA);
+
+  const main_data = await findInCollection(collection.GERMAN_CREDIT_DATA);
+
+  const statistics1 = await findInCollection(
+    collection.STATISTICS1_GERMAN_CREDIT_DATA
+  );
+
+  const emb = {
+    _id: "emb_tablica2",
+    original_data: main_data,
+    embeded: {
+      ...Object.fromEntries(
+        CATEGORIC_FIELD.map((field) => [[field], statistics1])
+      ),
+    },
+  };
+  await insertOneToCollection(collection.EMB2_GERMAN_CREDIT_DATA, emb);
+  console.log(await findOneInCollection(collection.EMB2_GERMAN_CREDIT_DATA));
+}
+
+async function zadatak7() {
+
+  
+}
 
 function readFromFileAndParse(filename: string) {
   const filePath = path.join(process.cwd(), filename);

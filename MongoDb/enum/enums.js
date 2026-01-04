@@ -4,6 +4,8 @@ export const collection = Object.freeze({
   FREQUENCY_GERMAN_CREDIT_DATA: "frekvencija_german_credit_data",
   STATISTICS1_GERMAN_CREDIT_DATA: "statistika1_german_credit_data",
   STATISTICS2_GERMAN_CREDIT_DATA: "statistika2_german_credit_data",
+  EMB_GERMAN_CREDIT_DATA: "emb_german_credit_data",
+  EMB2_GERMAN_CREDIT_DATA: "emb2_german_credit_data",
 });
 
 export const CHECKING_ACCOUNT_STATUS = {
