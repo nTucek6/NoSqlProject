@@ -61,12 +61,10 @@ async function main() {
     console.log("Connecting to DB...");
     await connectDb();
 
-    let input = await readLineSync.questionInt(
-      "Odaberite zadatak: "
-    );
+    let input = await readLineSync.questionInt("Odaberite zadatak: ");
 
     if (input != undefined) {
-      const number = input
+      const number = input;
       switch (number) {
         case 1:
           await zadatak1();
@@ -87,6 +85,9 @@ async function main() {
         case 6:
           await zadatak6();
           break;
+        case 9:
+          await importToDatabase();
+          break;
       }
     }
 
@@ -102,7 +103,10 @@ async function importToDatabase() {
   const path = "./data/german.data";
   const records = readFromFileAndParse(path);
   console.log(records[1]);
-  await insertManyToCollection(collection.GERMAN_CREDIT_DATA, records);
+  await dropCollection(collection.GERMAN_CREDIT_DATA);
+  console.log(
+    await insertManyToCollection(collection.GERMAN_CREDIT_DATA, records)
+  );
 }
 
 async function zadatak1() {
@@ -310,21 +314,20 @@ async function zadatak5() {
   await dropCollection(collection.EMB_GERMAN_CREDIT_DATA);
 
   const main_data = await findInCollection(collection.GERMAN_CREDIT_DATA);
+  await insertManyToCollection(collection.EMB_GERMAN_CREDIT_DATA, main_data);
+  let freq = await findInCollection(collection.FREQUENCY_GERMAN_CREDIT_DATA);
+  freq = freq[0];
 
-  const statistics2 = await findInCollection(
-    collection.STATISTICS2_GERMAN_CREDIT_DATA
-  );
+  const update = {};
 
-  const emb = {
-    _id: "emb_tablica3",
-    original_data: main_data,
-    embeded: {
-      ...Object.fromEntries(
-        CATEGORIC_FIELD.map((field) => [[field], statistics2])
-      ),
-    },
-  };
-  await insertOneToCollection(collection.EMB_GERMAN_CREDIT_DATA, emb);
+  Object.keys(freq).forEach((key) => {
+    if (key != "_id") {
+      update[key + "_freq"] = freq[key];
+    }
+  });
+
+  await updateManyFromCollection(collection.EMB_GERMAN_CREDIT_DATA, {}, update);
+
   console.log(await findOneInCollection(collection.EMB_GERMAN_CREDIT_DATA));
 }
 
@@ -332,21 +335,25 @@ async function zadatak6() {
   await dropCollection(collection.EMB2_GERMAN_CREDIT_DATA);
 
   const main_data = await findInCollection(collection.GERMAN_CREDIT_DATA);
+  await insertManyToCollection(collection.EMB2_GERMAN_CREDIT_DATA, main_data);
+  const statistics = await findInCollection(
+    collection.STATISTICS_GERMAN_CREDIT_DATA
+  );
+  const update = {};
 
-  const statistics1 = await findInCollection(
-    collection.STATISTICS1_GERMAN_CREDIT_DATA
+  for (const stat of statistics) {
+    update[stat["Varijabla"] + "_stat"] = Object.fromEntries(
+      Object.entries(stat)
+        .filter(([key]) => key !== "_id" && key !== "Varijabla")
+        .map(([key, value]) => [key, value])
+    );
+  }
+  await updateManyFromCollection(
+    collection.EMB2_GERMAN_CREDIT_DATA,
+    {},
+    update
   );
 
-  const emb = {
-    _id: "emb_tablica2",
-    original_data: main_data,
-    embeded: {
-      ...Object.fromEntries(
-        CATEGORIC_FIELD.map((field) => [[field], statistics1])
-      ),
-    },
-  };
-  await insertOneToCollection(collection.EMB2_GERMAN_CREDIT_DATA, emb);
   console.log(await findOneInCollection(collection.EMB2_GERMAN_CREDIT_DATA));
 }
 
@@ -368,7 +375,7 @@ function readFromFileAndParse(filename) {
 
 function parseToObject(object) {
   let data = new CreditRiskClass();
- // let data : any = new CreditRiskClass();
+  // let data : any = new CreditRiskClass();
   for (const [key, value] of Object.entries(object)) {
     data[key] = value;
   }
