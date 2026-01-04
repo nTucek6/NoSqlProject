@@ -70,8 +70,7 @@ async function main() {
           await zadatak1();
           break;
         case 2:
-          const data = await zadatak2();
-          console.log(data);
+          await zadatak2();
           break;
         case 3:
           await zadatak3();
@@ -85,9 +84,17 @@ async function main() {
         case 6:
           await zadatak6();
           break;
+        case 7:
+          await zadatak7();
+          break;
+        case 8:
+          await zadatak8();
+          break;
         case 9:
           await importToDatabase();
           break;
+        default:
+          console.log("Wrong input!");
       }
     }
 
@@ -178,8 +185,7 @@ async function zadatak2() {
       result
     );
   }
-  const done = await findInCollection(collection.STATISTICS_GERMAN_CREDIT_DATA);
-  return done;
+  console.log(await findInCollection(collection.STATISTICS_GERMAN_CREDIT_DATA));
 }
 
 async function zadatak3() {
@@ -357,7 +363,38 @@ async function zadatak6() {
   console.log(await findOneInCollection(collection.EMB2_GERMAN_CREDIT_DATA));
 }
 
-async function zadatak7() {}
+async function zadatak7() {
+  let emb2 = await findInCollection(collection.EMB2_GERMAN_CREDIT_DATA);
+
+  for (const e of emb2) {
+    Object.keys(e).forEach((key) => {
+      if (key.endsWith("_stat")) {
+        var average = e[key]["Srednja vrijednost"];
+        var standard_deviation = e[key]["Standardna devijacija"];
+
+        var result = Math.round((standard_deviation / average) * 100);
+        if (result > 10) {
+          e[key]["standard_deviation_>_average_in_%"] = result;
+        }
+      }
+    });
+    await updateOneFromCollection(
+      collection.EMB2_GERMAN_CREDIT_DATA,
+      {
+        _id: e["_id"],
+      },
+      {
+        $set: e,
+      },
+      {
+        upsert: true,
+      }
+    );
+  }
+  console.log(await findInCollection(collection.EMB2_GERMAN_CREDIT_DATA));
+}
+
+async function zadatak8() {}
 
 function readFromFileAndParse(filename) {
   const filePath = path.join(process.cwd(), filename);
