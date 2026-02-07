@@ -1,0 +1,51 @@
+[
+  {
+    "_id": "69867b373a6979c58a9dc29d",
+    "Srednja vrijednost": 20.903,
+    "Standardna devijacija": 12.058814452756371,
+    "Broj nomissing elemenata": 1000,
+    "Varijabla": "durationMonths"
+  },
+  {
+    "_id": "69867b373a6979c58a9dc29e",
+    "Srednja vrijednost": 3271.258,
+    "Standardna devijacija": 2822.736875960441,
+    "Broj nomissing elemenata": 1000,
+    "Varijabla": "creditAmount"
+  },
+  {
+    "_id": "69867b373a6979c58a9dc29f",
+    "Srednja vrijednost": 2.973,
+    "Standardna devijacija": 1.118714674312678,
+    "Broj nomissing elemenata": 1000,
+    "Varijabla": "installmentRatePercent"
+  },
+  {
+    "_id": "69867b373a6979c58a9dc2a0",
+    "Srednja vrijednost": 2.845,
+    "Standardna devijacija": 1.1037178956568539,
+    "Broj nomissing elemenata": 1000,
+    "Varijabla": "residenceSince"
+  },
+  {
+    "_id": "69867b373a6979c58a9dc2a1",
+    "Srednja vrijednost": 35.546,
+    "Standardna devijacija": 11.375468574317512,
+    "Broj nomissing elemenata": 1000,
+    "Varijabla": "ageYears"
+  },
+  {
+    "_id": "69867b373a6979c58a9dc2a2",
+    "Srednja vrijednost": 1.407,
+    "Standardna devijacija": 0.5776544682461,
+    "Broj nomissing elemenata": 1000,
+    "Varijabla": "existingCreditsThisBank"
+  },
+  {
+    "_id": "69867b373a6979c58a9dc2a3",
+    "Srednja vrijednost": 1.155,
+    "Standardna devijacija": 0.36208577175319395,
+    "Broj nomissing elemenata": 1000,
+    "Varijabla": "dependentsCount"
+  }
+]

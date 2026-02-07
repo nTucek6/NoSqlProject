@@ -13,18 +13,18 @@ async function createCollection(collectionName) {
 }
 
 async function getCollection(collectionName) {
-   const db = await connectDb();
-   return await db.collection(collectionName)
+  const db = await connectDb();
+  return await db.collection(collectionName);
 }
 
-async function createIndex(collectionName, index,indexName) {
+async function createIndex(collectionName, index, indexName) {
   const db = await connectDb();
-  await db.collection(collectionName).createIndex(index,{name: indexName});
+  await db.collection(collectionName).createIndex(index, { name: indexName });
 }
 
-async function dropIndex(collectionName,indexName) {
+async function dropIndex(collectionName, indexName) {
   const db = await connectDb();
-  await db.collection(collectionName).dropIndex({name: indexName});
+  await db.collection(collectionName).dropIndex({ name: indexName });
 }
 
 async function dropCollection(collectionName) {
@@ -70,7 +70,7 @@ async function updateOneFromCollection(
   collectionName,
   query,
   updatedValue,
-  options
+  options,
 ) {
   //create collection if it does'nt exist and add data, data is object {attribte: 'value', ...}
   const db = await connectDb();
@@ -133,6 +133,11 @@ async function aggregateCollection(collectionName, query) {
   return result;
 }
 
+async function getDocumentsName() {
+  const db = await connectDb();
+  return db.listCollections().toArray();
+}
+
 export {
   showCollections,
   createCollection,
@@ -151,5 +156,6 @@ export {
   aggregateCollection,
   createIndex,
   dropIndex,
-  getCollection
+  getCollection,
+  getDocumentsName,
 };

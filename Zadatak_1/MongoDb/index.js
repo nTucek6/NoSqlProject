@@ -8,10 +8,7 @@ import {
   createCollection,
   findOneInCollection,
   findInCollection,
-  insertOneToCollection,
   insertManyToCollection,
-  deleteOneFromCollection,
-  deleteManyFromCollection,
   dropCollection,
   updateOneFromCollection,
   updateManyFromCollection,
@@ -22,6 +19,7 @@ import {
   createIndex,
   dropIndex,
   getCollection,
+  getDocumentsName,
 } from "./utils/utils.js";
 
 import { collection, CHECKING_ACCOUNT_STATUS } from "./enum/enums.js";
@@ -96,6 +94,9 @@ async function main() {
         case 9:
           await importToDatabase();
           break;
+        case 10:
+          await exportCollection();
+          break;
         default:
           console.log("Wrong input!");
       }
@@ -115,7 +116,7 @@ async function importToDatabase() {
   console.log(records[1]);
   await dropCollection(collection.GERMAN_CREDIT_DATA);
   console.log(
-    await insertManyToCollection(collection.GERMAN_CREDIT_DATA, records)
+    await insertManyToCollection(collection.GERMAN_CREDIT_DATA, records),
   );
 }
 
@@ -136,7 +137,7 @@ async function zadatak1() {
     await updateManyFromCollection(
       collection.GERMAN_CREDIT_DATA,
       query,
-      update
+      update,
     );
   }
 
@@ -147,7 +148,7 @@ async function zadatak1() {
     const result = await updateManyFromCollection(
       collection.GERMAN_CREDIT_DATA,
       query,
-      update
+      update,
     );
     updated += result.modifiedCount;
   }
@@ -185,7 +186,7 @@ async function zadatak2() {
   if (result.length > 0) {
     await insertManyToCollection(
       collection.STATISTICS_GERMAN_CREDIT_DATA,
-      result
+      result,
     );
   }
   console.log(await findInCollection(collection.STATISTICS_GERMAN_CREDIT_DATA));
@@ -207,14 +208,14 @@ async function zadatak3() {
       $group: {
         _id: null,
         ...Object.fromEntries(
-          CATEGORIC_FIELD.map((field) => [[field], { $addToSet: `$${field}` }])
+          CATEGORIC_FIELD.map((field) => [[field], { $addToSet: `$${field}` }]),
         ),
       },
     },
   ];
   const result = await aggregateCollection(
     collection.GERMAN_CREDIT_DATA,
-    query
+    query,
   );
 
   await dropCollection(collection.FREQUENCY_GERMAN_CREDIT_DATA);
@@ -240,7 +241,7 @@ async function zadatak3() {
           collection.FREQUENCY_GERMAN_CREDIT_DATA,
           query,
           init,
-          options
+          options,
         );
 
         for (const v of value) {
@@ -255,7 +256,7 @@ async function zadatak3() {
             collection.FREQUENCY_GERMAN_CREDIT_DATA,
             query,
             update,
-            options
+            options,
           );
         }
       }
@@ -278,7 +279,7 @@ async function zadatak4() {
   */
 
   const statistics = await findInCollection(
-    collection.STATISTICS_GERMAN_CREDIT_DATA
+    collection.STATISTICS_GERMAN_CREDIT_DATA,
   );
 
   await dropCollection(collection.STATISTICS1_GERMAN_CREDIT_DATA);
@@ -286,36 +287,36 @@ async function zadatak4() {
 
   let query = {
     ...Object.fromEntries(
-      statistics.map((s) => [[s.Varijabla], { $lte: s["Srednja vrijednost"] }])
+      statistics.map((s) => [[s.Varijabla], { $lte: s["Srednja vrijednost"] }]),
     ),
   };
   const statistics1 = await findInCollection(
     collection.GERMAN_CREDIT_DATA,
-    query
+    query,
   );
 
   query = {
     ...Object.fromEntries(
-      statistics.map((s) => [[s.Varijabla], { $gt: s["Srednja vrijednost"] }])
+      statistics.map((s) => [[s.Varijabla], { $gt: s["Srednja vrijednost"] }]),
     ),
   };
   const statistics2 = await findInCollection(
     collection.GERMAN_CREDIT_DATA,
-    query
+    query,
   );
 
   const result1 = await insertManyToCollection(
     collection.STATISTICS1_GERMAN_CREDIT_DATA,
-    statistics1
+    statistics1,
   );
   const result2 = await insertManyToCollection(
     collection.STATISTICS2_GERMAN_CREDIT_DATA,
-    statistics2
+    statistics2,
   );
 
   console.log(statistics);
   console.log(
-    await findInCollection(collection.STATISTICS1_GERMAN_CREDIT_DATA)
+    await findInCollection(collection.STATISTICS1_GERMAN_CREDIT_DATA),
   );
 }
 
@@ -363,7 +364,7 @@ async function zadatak6() {
   const main_data = await findInCollection(collection.GERMAN_CREDIT_DATA);
   await insertManyToCollection(collection.EMB2_GERMAN_CREDIT_DATA, main_data);
   const statistics = await findInCollection(
-    collection.STATISTICS_GERMAN_CREDIT_DATA
+    collection.STATISTICS_GERMAN_CREDIT_DATA,
   );
   const update = {};
 
@@ -371,19 +372,24 @@ async function zadatak6() {
     update[stat["Varijabla"] + "_stat"] = Object.fromEntries(
       Object.entries(stat)
         .filter(([key]) => key !== "_id" && key !== "Varijabla")
-        .map(([key, value]) => [key, value])
+        .map(([key, value]) => [key, value]),
     );
   }
   await updateManyFromCollection(
     collection.EMB2_GERMAN_CREDIT_DATA,
     {},
-    update
+    update,
   );
 
   console.log(await findOneInCollection(collection.EMB2_GERMAN_CREDIT_DATA));
 }
 
 async function zadatak7() {
+  /*
+Skripta za svaki dokument analizira polja s sufiksom _stat: računa koeficijent varijacije (std.dev/srednja vrijednost × 100) 
+i ako je > 10%, dodaje novo polje "standard_deviation_>_average_in_%". 
+Modificirani dokumenti ažuriraju se pomoću updateOne() s $set operatorom.
+*/
   let emb2 = await findInCollection(collection.EMB2_GERMAN_CREDIT_DATA);
 
   for (const e of emb2) {
@@ -408,14 +414,13 @@ async function zadatak7() {
       },
       {
         upsert: true,
-      }
+      },
     );
   }
   console.log(await findInCollection(collection.EMB2_GERMAN_CREDIT_DATA));
 }
 
 async function zadatak8() {
-
   const table = await getCollection(collection.GERMAN_CREDIT_DATA);
 
   const indexName = "custom_index";
@@ -430,7 +435,7 @@ async function zadatak8() {
   await createIndex(
     collection.GERMAN_CREDIT_DATA,
     { ageYears: 1, creditAmount: -1, checkingAccountStatus: 1 },
-    indexName
+    indexName,
   );
 
   const result = await table
@@ -438,7 +443,8 @@ async function zadatak8() {
       ageYears: { $gte: 30 }, // Range (prefix)
       checkingAccountStatus: "A11", // Equality (suffix)
     })
-    .sort({ creditAmount: -1 }).toArray();
+    .sort({ creditAmount: -1 })
+    .toArray();
 
   console.log(result);
   console.log("Entries: ", result.length);
@@ -458,19 +464,17 @@ function readFromFileAndParse(filename) {
     .filter(Boolean);
 }
 
-/*
-function parseToObject(object) {
-  let data = new CreditRiskClass();
-  // let data : any = new CreditRiskClass();
-  for (const [key, value] of Object.entries(object)) {
-    data[key] = value;
-  }
-  return data;
-}
+async function exportCollection() {
+  const collections = await getDocumentsName();
 
-function parseJSONToArray(data = []) {
-  const array = data.map((item) => parseToObject(item));
-  return array;
-}*/
+  for (const item of collections) {
+    const data = await findInCollection(item.name);
+    fs.writeFileSync(
+      "../export_db/" + item.name + ".json",
+      JSON.stringify(data, null, 2),
+    );
+    console.log(`Exported ${data.length} records`);
+  }
+}
 
 main().catch(console.error);
